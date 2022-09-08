@@ -50,7 +50,7 @@ public:
 protected:
   void execute()
   {
-    env->_aliases[alias] = expansion;
+    env->_aliases.emplace_back(alias, expansion);
   }
 
 private:

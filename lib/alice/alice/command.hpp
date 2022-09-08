@@ -145,7 +145,7 @@ public:
 
     Keys are the alias regular expressions mapping to substitutions.
   */
-  inline const std::unordered_map<std::string, std::string>& aliases() const
+  inline const std::vector<std::pair<std::string, std::string>>& aliases() const
   {
     return _aliases;
   }
@@ -247,7 +247,7 @@ private:
   std::unordered_map<std::string, std::shared_ptr<void>> _stores;
   std::unordered_map<std::string, std::shared_ptr<command>> _commands;
   std::unordered_map<std::string, std::vector<std::string>> _categories;
-  std::unordered_map<std::string, std::string> _aliases;
+  std::vector<std::pair<std::string, std::string>> _aliases;
   std::unordered_map<std::string, std::string> _variables;
   std::string _default_option;
 

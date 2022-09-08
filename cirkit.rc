@@ -1,6 +1,6 @@
 # commands
-alias "rfz(.*)" "refactor -z{}"
-alias "rf(.*)" "refactor{}"
+alias "rfz(.*)" "refactor --max_pis=4 -z{}"
+alias "rf(.*)" "refactor --max_pis=4{}"
 alias "rwz(.*)" "cut_rewrite --multiple -z{}"
 alias "rw(.*)" "cut_rewrite --multiple{}"
 alias "rsz(.*)" "resub -z{}"
@@ -20,7 +20,7 @@ alias "15rwz" "rwz; rwz; rwz; rwz; rwz; rwz; rwz; rwz; rwz; rwz; rwz; rwz; rwz; 
 alias "aig_script2" "bl; rd; rw; rf --strategy=2; bl; rd; rw; rwz; bl; rd; rfz --strategy=2; rwz; bl; rd"
 alias "aig_script3" "rd; rw; rf --strategy=3; bl; rw; rwz; bl; rfz --strategy=3; rwz; bl; rd"
 alias "aig_script4" "rw; rs; rw; rf --strategy=3; rd; rs; rf --strategy=3; rs; rw; rwz; rfz --strategy=3; rwz; rd; rs; rwz; rwz; rwz; rd"
-alias "aig_script5" "rd; 15rw; rf --max_pis=4; bl; 15rw; 15rwz; bl; rfz --max_pis=4; 15rwz; bl; rd"
+alias "aig_script5" "rd; 15rw; rf; bl; 15rw; 15rwz; bl; rfz; 15rwz; bl; rd"
 alias "aig_script" "rw; rd; rw; rw; rf; rw; rd; rw; rw; rw; rw; rw; rw; rd"
 alias "mig_script2" "bl; rw; rf --strategy=1; bl; rw; rwz; bl; rfz --strategy=1; rwz; bl"
 alias "mig_script3" "mighty; rw; rw; rwz; rw; rw; rwz"
