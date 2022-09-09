@@ -3,7 +3,7 @@
 
 using namespace alice;
 
-using cli_base = cli<aig_t, mig_t, xag_t, xmg_t, klut_t>;
+using cli_base = cli<aig_t, mig_t, xag_t, xmg_t, klut_t, tlib_t, mapped_t>;
 class cirkit_cli: public cli_base {
     nlohmann::json last_result_;
     // a simplified version of cli::execute_line
@@ -43,10 +43,13 @@ bool cirkit_cli::execute_line(const std::string& line, bool save_result) {
 
 using detail::return_value_dict;
 py::object cirkit_cli::run_cmd(const std::string& cmd) {
-    execute_line(cmd, true);
-    return last_result_.is_object() ?
-             py::cast(return_value_dict(last_result_)) :
-             py::none();
+    mockturtle::stopwatch<>::duration time{0};
+    { mockturtle::stopwatch<> t{time}; execute_line(cmd, true); }
+    if (last_result_.is_object()) {
+        last_result_["time_total"] = mockturtle::to_seconds(time);
+        return py::cast(return_value_dict(last_result_));
+    }
+    return py::none();
 }
 
 _ALICE_END_LIST(alice_stores)

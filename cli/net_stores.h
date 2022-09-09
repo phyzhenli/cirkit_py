@@ -34,9 +34,9 @@ using namespace std::string_literals;
   ALICE_WRITE_FILE(type, tag, elem, filename, cmd) { mockturtle::write_##tag(*elem, filename); }
 
 #define ADD_NET_STORE(type, _mnemonic, _name) \
-  using type##_nt = mockturtle::mapping_view<mockturtle::names_view<mockturtle::type##_network>, true>; \
+  using type##_nt = mockturtle::names_view<mockturtle::type##_network>; \
   using type##_t  = std::shared_ptr<type##_nt>; \
-  template<> struct store_traits<type##_t> { using net_type = mockturtle::type##_network; }; \
+  /*template<> struct store_traits<type##_t> { using net_type = mockturtle::type##_network; };*/ \
   ALICE_ADD_STORE(type##_t, #type, _mnemonic, _name, _name"s") \
   ALICE_DESCRIBE_STORE(type##_t, elem) \
   { return fmt::format("i/o = {}/{}   gates = {}", elem->num_pis(), elem->num_pos(), elem->num_gates()); } \
@@ -44,8 +44,6 @@ using namespace std::string_literals;
     mockturtle::depth_view depth_net{*elem}; \
     os << fmt::format("{}   i/o = {}/{}   gates = {}   level = {}", \
             _name, elem->num_pis(), elem->num_pos(), elem->num_gates(), depth_net.depth()); \
-    if (elem->has_mapping()) \
-        os << fmt::format("   luts = {}", elem->num_cells()); \
     os << std::endl; \
   } \
   ALICE_LOG_STORE_STATISTICS(type##_t, elem) { \
@@ -78,7 +76,6 @@ using namespace std::string_literals;
   WRITE_NET_FILE(type##_t, verilog)
 
 namespace alice {
-template<typename S> struct store_traits {};
 
 ALICE_ADD_FILE_TYPE_READ_ONLY(aiger, "Aiger");
 ALICE_ADD_FILE_TYPE(bench, "BENCH");

@@ -21,7 +21,7 @@ public:
 
     template<class Store>
     void execute_store() {
-        using ntk_t = typename store_traits<Store>::net_type;
+        using ntk_t = typename Store::element_type;
         auto  ntk_p = static_cast<ntk_t*>(store<Store>().current().get());
         mockturtle::functional_reduction(*ntk_p, ps, &st);
         *ntk_p = mockturtle::cleanup_dangling(*ntk_p);

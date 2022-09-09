@@ -23,7 +23,7 @@ public:
     template<class Store>
     void execute_store() {
         using namespace mockturtle;
-        using ntk_t = typename store_traits<Store>::net_type;
+        using ntk_t = typename Store::element_type;
         auto  ntk_p = static_cast<ntk_t*>(store<Store>().current().get());
         if (is_set("esop"))
             *ntk_p = balancing(*ntk_p, {esop_rebalancing<ntk_t>{}}, ps, &st);
