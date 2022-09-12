@@ -19,7 +19,7 @@ bool cirkit_cli::execute_line(const std::string& line, bool save_result) {
     if (line.empty() || line[0] == '#') return false;
 
     /* split commands if line contains a semi-colon */
-    const auto lines = detail::split_with_quotes<';'>(line);
+    const auto lines = detail::split_with_quotes<';'>(preprocess_alias(line));
     /* if more than one command is detected recurse on each part */
     if (lines.size() > 1u) {
         auto i = 0u;
@@ -29,7 +29,7 @@ bool cirkit_cli::execute_line(const std::string& line, bool save_result) {
     }
 
     last_result_.clear();
-    auto vline = detail::split_with_quotes<' '>(line);
+    auto vline = detail::split_with_quotes<' '>(lines[0]);
     const auto& vcmd = vline.front();
     if (!env->commands().count(vcmd)) {
         env->err() << "[e] unknown command: " << vcmd << std::endl;
