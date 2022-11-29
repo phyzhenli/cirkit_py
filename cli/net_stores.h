@@ -18,11 +18,16 @@
 #include <mockturtle/networks/xag.hpp>
 #include <mockturtle/networks/xmg.hpp>
 #include <mockturtle/networks/klut.hpp>
-#include <mockturtle/networks/cover.hpp>
+// #include <mockturtle/networks/cover.hpp>
 #include <mockturtle/views/depth_view.hpp>
 #include <mockturtle/views/mapping_view.hpp>
 #include <mockturtle/views/names_view.hpp>
-#include <mockturtle/algorithms/cover_to_graph.hpp>
+// #include <mockturtle/algorithms/cover_to_graph.hpp>
+
+#include "mockturtle/algorithms/node_resynthesis/mig_npn.hpp"
+#include "mockturtle/algorithms/node_resynthesis/xag_npn.hpp"
+#include "mockturtle/algorithms/node_resynthesis/xmg_npn.hpp"
+#include "mockturtle/algorithms/node_resynthesis.hpp"
 
 using namespace std::string_literals;
 
@@ -56,18 +61,20 @@ using namespace std::string_literals;
     READ_NET(aiger, filename, network); \
     return std::make_shared<type##_nt>(network); \
   } \
+  ALICE_READ_FILE(type##_t, ascii_aiger, filename, cmd) { \
+    mockturtle::type##_network network; \
+    if (lorina::read_ascii_aiger(filename, mockturtle::aiger_reader{network}) != lorina::return_code::success) { \
+      std::cout << "[w] parse error\n"; \
+    } \ 
+    else { \
+      return std::make_shared<type##_nt>(network); \
+    } \
+  } \
   WRITE_NET_FILE(type##_t, bench) \
   WRITE_NET_FILE(type##_t, blif)
 
 #define ADD_NET_STORE_EXT(type, _mnemonic, _name) \
   ADD_NET_STORE(type, _mnemonic, _name) \
-  ALICE_READ_FILE(type##_t, blif, filename, cmd) { \
-    mockturtle::cover_network cover; \
-    READ_NET(blif, filename, cover); \
-    mockturtle::type##_network network; \
-    mockturtle::convert_cover_to_graph(network, cover); \
-    return std::make_shared<type##_nt>(network); \
-  } \
   ALICE_READ_FILE(type##_t, verilog, filename, cmd) { \
     mockturtle::type##_network network; \
     READ_NET(verilog, filename, network); \
@@ -75,8 +82,10 @@ using namespace std::string_literals;
   } \
   WRITE_NET_FILE(type##_t, verilog)
 
+
 namespace alice {
 
+ALICE_ADD_FILE_TYPE_READ_ONLY(ascii_aiger, "ASCII Aiger");
 ALICE_ADD_FILE_TYPE_READ_ONLY(aiger, "Aiger");
 ALICE_ADD_FILE_TYPE(bench, "BENCH");
 ALICE_ADD_FILE_TYPE(blif, "BLIF");
@@ -89,17 +98,57 @@ ADD_NET_STORE_EXT(xmg, "x", "XMG");
 ADD_NET_STORE(klut, "l", "LUT network");
 
 ALICE_READ_FILE(klut_t, bench, filename, cmd) {
-    mockturtle::klut_network klut;
-    mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
-    READ_NET(bench, filename, named_klut);
-    return std::make_shared<klut_nt>(named_klut);
+  mockturtle::klut_network klut;
+  mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
+  READ_NET(bench, filename, named_klut);
+  return std::make_shared<klut_nt>(named_klut);
 }
 
 ALICE_READ_FILE(klut_t, blif, filename, cmd) {
-    mockturtle::klut_network klut;
-    mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
-    READ_NET(blif, filename, named_klut);
-    return std::make_shared<klut_nt>(named_klut);
+  mockturtle::klut_network klut;
+  mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
+  READ_NET(blif, filename, named_klut);
+  return std::make_shared<klut_nt>(named_klut);
+}
+ALICE_READ_FILE(aig_t, blif, filename, cmd) {
+  mockturtle::klut_network klut;
+  mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
+  READ_NET(blif, filename, named_klut);
+  mockturtle::aig_network network;
+  aig_nt named_dest(network);
+  mockturtle::xag_npn_resynthesis<mockturtle::aig_network> resyn;
+  mockturtle::node_resynthesis(named_dest, named_klut, resyn);
+  return std::make_shared<aig_nt>(named_dest);
+}
+ALICE_READ_FILE(xag_t, blif, filename, cmd) {
+  mockturtle::klut_network klut;
+  mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
+  READ_NET(blif, filename, named_klut);
+  mockturtle::xag_network network;
+  xag_nt named_dest(network);
+  mockturtle::xag_npn_resynthesis<mockturtle::xag_network> resyn;
+  mockturtle::node_resynthesis(named_dest, named_klut, resyn);
+  return std::make_shared<xag_nt>(named_dest);
+}
+ALICE_READ_FILE(mig_t, blif, filename, cmd) {
+  mockturtle::klut_network klut;
+  mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
+  READ_NET(blif, filename, named_klut);
+  mockturtle::mig_network network;
+  mig_nt named_dest(network);
+  mockturtle::mig_npn_resynthesis resyn;
+  mockturtle::node_resynthesis(named_dest, named_klut, resyn);
+  return std::make_shared<mig_nt>(named_dest);
+}
+ALICE_READ_FILE(xmg_t, blif, filename, cmd) {
+  mockturtle::klut_network klut;
+  mockturtle::names_view<mockturtle::klut_network> named_klut{klut};
+  READ_NET(blif, filename, named_klut);
+  mockturtle::xmg_network network;
+  xmg_nt named_dest(network);
+  mockturtle::xmg_npn_resynthesis resyn;
+  mockturtle::node_resynthesis(named_dest, named_klut, resyn);
+  return std::make_shared<xmg_nt>(named_dest);
 }
 
 }   // namespace alice
